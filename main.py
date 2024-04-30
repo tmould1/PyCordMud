@@ -13,7 +13,6 @@ GAME_CHANNEL = "game"
 activity = discord.Game(name="Playing games, !help for commands")
 game_bot = game.DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
 #set the presence of the bot
-game_bot.status
 
 # Handles event registration
 @game_bot.event

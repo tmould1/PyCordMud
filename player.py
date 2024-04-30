@@ -109,7 +109,7 @@ class PlayerInfo(LocationContent):
         max_gear = 3
         num_poop = max_gear - num_gear
         num_diamonds = num_gear
-        description_str = f'💎' * num_diamonds + '💩' * num_poop
+        description_str = '💎' * num_diamonds + '💩' * num_poop
         self.description = description_str
         return acquire_msg
     

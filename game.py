@@ -1,9 +1,6 @@
 from discord.ext import commands
 
-import random
-
 from player import PlayerInfo
-from location import Location
 from enemy import EnemyManager
 from map import Map
 
@@ -93,10 +90,6 @@ class DiscordGame():
         if player is None:
             return self.build_player_not_found_msg(player_name)
         return player.show_surroundings()  
-
-    def show_position_contents(self, position):
-        x, y = position
-        return self.map[x][y]
     
     def attack_enemy(self, player_name, target_name):
         attack_msg = ''
