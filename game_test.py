@@ -55,15 +55,14 @@ def test_ShowPlayerSurroundings_CenterOfWorld():
     test_player_icon = '🧪'
     test_player.icon = test_player_icon
     test_game.add_player(test_player)
+    player_grid = test_player.position
     
     # Act
     result = test_game.show_player_surroundings(tester_name)
     
-    first_line = result.split('\n')[0]
-    second_line = result.split('\n')[1]
-    third_line = result.split('\n')[2]
+    player_line = result.split('\n')[player_grid[0]]
     # Assert
-    assert test_player_icon in third_line
+    assert test_player_icon in player_line
 
 def test_ShowPlayerSurroundings_DropItemOnFirstLine():
     # Arrange
@@ -73,7 +72,8 @@ def test_ShowPlayerSurroundings_DropItemOnFirstLine():
     test_player_icon = '🧪'
     test_player.icon = test_player_icon
     test_game.add_player(test_player)
-    test_location = test_game.map.map_location_data[1][1]
+    row_index = 1
+    test_location = test_game.map.map_location_data[row_index][1]
     test_item = Gear('Test Item', 'A test item')
     test_item.icon = '🧬'
     test_location.add_content(test_item)
@@ -82,8 +82,6 @@ def test_ShowPlayerSurroundings_DropItemOnFirstLine():
     # Act
     result = test_game.show_player_surroundings(tester_name)
     
-    first_line = result.split('\n')[0]
-    second_line = result.split('\n')[1]
-    third_line = result.split('\n')[2]
+    item_line = result.split('\n')[row_index]
     # Assert
-    assert test_item.icon in second_line
+    assert test_item.icon in item_line
