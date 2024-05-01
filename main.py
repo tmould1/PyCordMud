@@ -84,7 +84,7 @@ class DiscordBot(commands.Bot):
         return self.game.use_consumable(player_name, consumable_name)
 
 
-activity = discord.Game(name="Playing games, !help for commands")
+activity = discord.Game(name="PyCordMud, !help")
 game_bot = DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
 
 ####################################################
