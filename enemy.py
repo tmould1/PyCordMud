@@ -1,3 +1,6 @@
+"""
+This module manages the enemies in the game.
+"""
 import random
 
 from location import LocationContent
@@ -5,39 +8,72 @@ from location import Location
 from player import PlayerInfo
 from gear import Gear
 
- 
+
 class EnemyManager():
+    """
+    Manages the enemies in the game.
+    """
+
     def __init__(self, discord_game):
         self.enemies = []
         self.game = discord_game
-        
+
     def add_enemy(self, enemy):
+        """
+        Adds an enemy to the list of enemies.
+        
+        Args:
+            enemy: The enemy object to be added.
+        """
         self.enemies.append(enemy)
-        
+
     def remove_enemy(self, enemy):
-        self.enemies.remove(enemy)
+        """
+        Removes an enemy from the list of enemies.
         
+        Args:
+            enemy: The enemy object to be removed.
+        """
+        self.enemies.remove(enemy)
+
     def get_enemy(self, name):
+        """
+        Retrieves an enemy from the list of enemies by name.
+        
+        Args:
+            name: The name of the enemy to retrieve.
+        
+        Returns:
+            The enemy object with the specified name, or None if not found.
+        """
         for enemy in self.enemies:
             if enemy.name == name:
                 return enemy
         return None
-    
-    def initial_seed(self):
-        center = self.game.map.map_location_data[self.game.map_size[0] // 2][self.game.map_size[1] // 2]
-        top_left = self.game.map.map_location_data[0][0]
-        bottom_right = self.game.map.map_location_data[self.game.map_size[0] - 1][self.game.map_size[1] - 1]
 
-        self.create_basic_goblin(center)        
-        self.create_intermediate_orc(top_left)        
+    def initial_seed(self):
+        """
+        Initializes the seed for enemy creation.
+        """
+        center = self.game.map.map_location_data[self.game.map_size[0] // 2]\
+            [self.game.map_size[1] // 2]
+        top_left = self.game.map.map_location_data[0][0]
+        bottom_right = self.game.map.map_location_data[self.game.map_size[0] - 1]\
+            [self.game.map_size[1] - 1]
+
+        self.create_basic_goblin(center)
+        self.create_intermediate_orc(top_left)
         self.create_advanced_troll(bottom_right)
 
         random_x = random.randint(0, self.game.map_size[0] - 1)
         random_y = random.randint(0, self.game.map_size[1] - 1)
         random_location = self.game.map.map_location_data[random_x][random_y]
         self.create_boss_dragon(random_location)
-        
-    def create_basic_goblin(self, location : Location):
+
+    def create_basic_goblin(self, location: Location):
+        """
+        Creates a basic goblin enemy.
+        """
         gobbo = Enemy('Goblin', location, self)
         gobbo.icon = '👺'
         gobbo.health = 1
@@ -50,8 +86,11 @@ class EnemyManager():
         self.add_enemy(gobbo)
         location.add_content(gobbo)
         return gobbo
-    
-    def create_intermediate_orc(self, location : Location):
+
+    def create_intermediate_orc(self, location: Location):
+        """
+        Creates an intermediate orc enemy.
+        """
         orc = Enemy('Orc', location, self)
         orc.icon = '👹'
         orc.health = 3
@@ -60,27 +99,34 @@ class EnemyManager():
         first_orc_armor = Gear('Orcish Armor', 'Armor made from the hides of slain orcs')
         first_orc_armor.icon = '🛡️'
         first_orc_armor.armor = 1
-        orc.drops.append(first_orc_armor)        
+        orc.drops.append(first_orc_armor)
         self.add_enemy(orc)
         location.add_content(orc)
         return orc
-    
-    def create_advanced_troll(self, location : Location):
+
+    def create_advanced_troll(self, location: Location):
+        """
+        Creates an advanced troll enemy.
+        """
         troll = Enemy('Troll', location, self)
         troll.icon = '🧟'
         troll.health = 5
         troll.power = 3
         troll.build_description()
-        first_troll_magic_circlet = Gear('Troll Magic Circlet', 'A circlet that enhances the magical abilities of trolls')
+        first_troll_magic_circlet = Gear('Troll Magic Circlet',
+                        'A circlet that enhances the magical abilities of trolls')
         first_troll_magic_circlet.icon = '🔮'
         first_troll_magic_circlet.attack = 5
         first_troll_magic_circlet.armor = 3
         troll.drops.append(first_troll_magic_circlet)
         self.add_enemy(troll)
-        location.add_content(troll)  
+        location.add_content(troll)
         return troll
-    
-    def create_boss_dragon(self, location : Location):
+
+    def create_boss_dragon(self, location: Location):
+        """
+        Creates a boss dragon enemy.
+        """
         dragon = Enemy('Dragon', location, self)
         dragon.icon = '🐉'
         dragon.health = 20
@@ -95,6 +141,9 @@ class EnemyManager():
         return dragon
 
     def handle_enemy_death(self, enemy):
+        """
+        Handles the death of an enemy.
+        """
         self.remove_enemy(enemy)
         random_new_enemy_location = random.choice(self.game.map.map_location_data)
         random_new_enemy_location = random.choice(random_new_enemy_location)
@@ -115,29 +164,43 @@ class EnemyManager():
 
 
 class Enemy(LocationContent):
-    def __init__(self, name, location : Location, manager : EnemyManager):
+    """
+    Represents an enemy in the game.
+    """
+
+    def __init__(self, name, location: Location, manager: EnemyManager):
+        super().__init__()
         self.name = name
         self.icon = '👾'
         self.location = location
         self.manager = manager
-        
+
         self.power = 1
         self.health = 1
-        
+
         self.description = self.build_description()
 
         self.drops = []
 
     def build_description(self):
+        """
+        Builds the description of the enemy.
+        """
         self.description = f'(❤️{self.health} 💪{self.power})'
         return self.description
-        
-    def attack(self, player : PlayerInfo):
+
+    def attack(self, player: PlayerInfo):
+        """
+        Performs an attack on the player.
+        """
         attack_msg = f'{self.name} attacks {player.name} 🫵!\n'
         attack_msg += player.receive_damage(self.power)
         return attack_msg
-    
+
     def receive_damage(self, source, damage):
+        """
+        Receives damage from a source.
+        """
         enemy_recv_msg = f'{self.name} receives {damage} damage 💥!\n'
         self.health -= damage
         self.description = f'(❤️{self.health} 💪{self.power})'
@@ -152,11 +215,12 @@ class Enemy(LocationContent):
 
         self.build_description()
         return enemy_recv_msg
-    
+
     def do_drop_loot(self):
+        """
+        Drops loot when the enemy is defeated.
+        """
         random_drop = random.choice(self.drops)
         drop_msg = f'{self.name} drops {random_drop.name}.\n'
         self.location.add_content(random_drop)
         return drop_msg
-              
-

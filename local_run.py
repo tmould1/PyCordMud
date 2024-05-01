@@ -1,6 +1,12 @@
+"""
+This module contains the local running logic for the game.
+"""
 import game
 
 def main():
+    """
+    Main function for running the game.
+    """
     game_instance = game.DiscordGame("Test Game")
     player = game.PlayerInfo("Tester", game_instance)
     game_instance.add_player(player)
@@ -11,3 +17,4 @@ def main():
     
 if __name__ == '__main__':
     main()
+

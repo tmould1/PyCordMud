@@ -1,54 +1,100 @@
+"""
+This module defines Locations and LocationContents in the game.
+"""
 
 class LocationContent():
+    """
+    Represents the content of a location.
+    """
+    def __init__(self):
+        """
+        Initializes a new LocationContent instance.
+        """
+        self.name = ''
+        self.icon = ''
+        self.description = ''
+
     def location_display(self):
+        """
+        Returns the display string for the location.
+        """
         return f'{self.icon} {self.name} is here. {self.description}'
-    
+
 class Location():
+    """
+    Represents a location.
+    """
+
     def __init__(self, name, description, coordinates=(0, 0)):
+        """
+        Initializes a new Location instance.
+        """
         self.name = name
         self.description = description
         self.default_icon = '🟦'
         self.map_icon = self.default_icon
         self.contents = []
         self.coordinates = coordinates
-        
+
     def add_content(self, content):
+        """
+        Adds content to the location.
+        """
         self.contents.append(content)
-        
+
     def remove_content(self, content):
-        for content in self.contents:
-            if content.name == content.name:
-                print(f'Removing {content.name} from {self.name}')
-                self.contents.remove(content)
+        """
+        Removes content from the location.
+        """
+        for c in self.contents:
+            if c.name == content.name:
+                print(f'Removing {c.name} from {self.name}')
+                self.contents.remove(c)
                 remaining_content = self.build_content_string()
                 print(f'Contents remaining: {remaining_content}')
                 break
-        
+
     def build_content_string(self):
+        """
+        Builds a string representation of the location's contents.
+        """
         content_str = ''
-        for content in self.contents:
-            content_str += content.location_display() + '\n'
+        for c in self.contents:
+            content_str += c.location_display() + '\n'
         return content_str
-    
+
     def has_contents(self):
+        """
+        Checks if the location has contents.
+        """
         return len(self.contents) > 0
-    
+
     def get_contents(self):
+        """
+        Returns the contents of the location.
+        """
         return self.contents
-    
+
     def has_enemies(self):
+        """
+        Checks if the location has enemies.
+        """
         from enemy import Enemy
 
-        for content in self.contents:
-            if isinstance(content, Enemy):
+        for c in self.contents:
+            if isinstance(c, Enemy):
                 return True
         return False
-    
+
     def get_enemies(self):
+        """
+        Returns the enemies in the location.
+        """
         from enemy import Enemy
 
         enemies = []
-        for content in self.contents:
-            if isinstance(content, Enemy):
-                enemies.append(content)
+        for c in self.contents:
+            if isinstance(c, Enemy):
+                enemies.append(c)
         return enemies
+
