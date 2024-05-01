@@ -10,15 +10,15 @@ class Gear(LocationContent):
         self.icon = '🛡️'
         self.name = name
         self.description = description
-        self.armor = 0
-        self.attack = 0
+        self.offense = 0
+        self.defense = 0
 
     def apply_stats(self, player):
         """ Apply the stats of the gear to the player. """
-        player.base_attack += self.attack
-        player.max_health += self.armor
+        player.base_attack += self.offense
+        player.max_health += self.defense
 
     def remove_stats(self, player):
         """ Remove the stats of the gear from the player."""
-        player.base_attack -= self.attack
-        player.max_health -= self.armor
+        player.base_attack -= self.offense
+        player.max_health -= self.defense

@@ -16,16 +16,73 @@ import discord.utils
 
 import game
 
-TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.getenv('DISCORD_TOKEN') # This token comes from the Discord Developer Portal
 GUILD = "test"
 GAME_CHANNEL = "game"
 
+
+# Handles Context extraction
+class DiscordBot(commands.Bot):
+    """
+    DiscordBot class for handling the Discord bot functionality.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.game = game.DiscordGame("JoPy")
+
+    def joingame(self, context : commands.Context):
+        """
+        Join the game with the given context.
+        """
+        joining_player = context.author.name
+        self.game.add_player(joining_player)
+
+    def show_player_surroundings(self, context : commands.Context):
+        """
+        Show the surroundings of the player with the given context.
+        """
+        return self.game.show_player_surroundings(context.author.name)
+
+    def move_player(self, context : commands.Context, direction):
+        """
+        Move the player with the given context in the specified direction.
+        """
+        return self.game.move_player(context.author.name, direction)
+
+    def attack_enemy(self, context : commands.Context, target_name):
+        """
+        Attack the enemy with the given context and target name.
+        """
+        return self.game.attack_enemy(context.author.name, target_name)
+
+    def show_player_stats(self, context : commands.Context):
+        """
+        Show the stats of the player with the given context.
+        """
+        player_name = context.author.name
+        return self.game.show_player_stats(player_name)
+
+    def show_player_inventory(self, context : commands.Context):
+        """
+        Show the inventory of the player with the given context.
+        """
+        player_name = context.author.name
+        return self.game.show_player_inventory(player_name)
+
+    def take_item(self, context : commands.Context, item_name):
+        """
+        Take the item with the given name using the player with the given context.
+        """
+        player_name = context.author.name
+        return self.game.take_item(player_name, item_name)
+
+
 activity = discord.Game(name="Playing games, !help for commands")
-game_bot = game.DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
+game_bot = DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
 
-# Set the presence of the bot
-
-# Handles event registration
+####################################################
+### Event Handlers and Command Definitions Below ###
+####################################################
 @game_bot.event
 async def on_ready():
     """ Event handler for when the bot is ready. """
@@ -96,7 +153,7 @@ async def on_command_error(context, error):
         await context.send('Please pass in all required arguments.')
     else:
         print(f'An error occurred: {error}')
-       
+
 @game_bot.command(name='move', help='Move your player on the map')
 async def move(context, direction : str):
     """ Command to move the player on the map. """
@@ -110,7 +167,7 @@ async def move(context, direction : str):
     move_msg = game_bot.move_player(context, direction)
     await context.send(move_msg)
     await context.send(game_bot.show_player_surroundings(context))
-    
+
 @game_bot.command(name='showmap', help='Show the map')
 async def show_map(context):
     """ Command to show the map. """
@@ -122,7 +179,7 @@ async def show_map(context):
         )
         return
     await context.send(game_bot.show_player_surroundings(context))
-    
+
 @game_bot.command(name='attack', help='Attack an enemy')
 async def attack(context, target_name):
     """ Command to attack an enemy. """
@@ -135,7 +192,7 @@ async def attack(context, target_name):
         return
     attack_msg = game_bot.attack_enemy(context, target_name)
     await context.send(attack_msg)
-    
+
 @game_bot.command(name='stats', help='Show player stats')
 async def stats(context):
     """ Command to show player stats. """
@@ -147,17 +204,6 @@ async def stats(context):
         )
         return
     await context.send(game_bot.show_player_stats(context))
-    
-# @game_bot.command(name='inventory', help='Show player inventory')
-# async def inventory(context):
-#     if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
-#         # send the user a DM directing them to the game channel
-#         await context.author.create_dm()
-#         await context.author.dm_channel.send(
-#             f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
-#         )
-#         return
-#     await context.send(game_bot.show_player_inventory(context))
 
 @game_bot.command(name='take', help='Take an item')
 async def take(context, item_name):

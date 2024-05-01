@@ -1,26 +1,19 @@
+"""
+This module contains the player logic.
+"""
 import math
 
-from location import LocationContent
+from character import Character
 from gear import Gear
 
-class PlayerInfo(LocationContent):
+class PlayerCharacter(Character):
     """
     Represents information about a player.
     """
     def __init__(self, name, game):
-        super().__init__()
+        super().__init__(game, name, '💩💩💩', 3, 1)
         self.icon = '🧙‍♂️'
-        self.name = name
         self.position = (2, 2)
-        self.game = game
-        self.description = '💩💩💩'
-
-        self.max_health = 3
-        self.base_attack = 1
-        self.gear = []
-
-        # set the player's health to the max health        
-        self.health = self.max_health
 
     def move(self, direction):
         """
@@ -28,7 +21,7 @@ class PlayerInfo(LocationContent):
         """
         direction = direction.lower()
         move_msg = f'You move {direction}'
-    
+
         initial_position = self.position
         if direction == 'north':
             self.position = (self.position[0] - 1, self.position[1])
@@ -38,7 +31,7 @@ class PlayerInfo(LocationContent):
             self.position = (self.position[0], self.position[1] - 1)
         elif direction == 'east':
             self.position = (self.position[0], self.position[1] + 1)
- 
+
         # bounds check on map size
         x_min, y_min = 0, 0
         x_max, y_max = self.game.map_size
@@ -85,39 +78,6 @@ class PlayerInfo(LocationContent):
         surroundings += location_data.build_content_string()
         return surroundings
 
-    def attack(self, target_name):
-        """
-        Attack the specified target.
-        """
-        target_name = target_name.lower()
-        attack_msg = ''
-        # is the target in our location? if so, attack it
-        location = self.game.map.map_location_data[self.position[0]][self.position[1]]
-        enemy = None
-        for content in location.contents:
-            if target_name in content.name.lower():
-                enemy = content
-                break
-        if enemy is None:
-            return f'No enemy named {target_name} found here'
-
-        if len(self.gear) <= 0:
-            attack_msg += f'You attack {enemy.name} with your bare hands! 💪\n'
-        attack_msg += enemy.receive_damage(self, self.get_attack_damage())
-
-        # is enemy dead?
-        if enemy.health <= 0:
-            location.remove_content(enemy)
-            self.game.update_shown_map()
- 
-        return attack_msg
-
-    def get_attack_damage(self):
-        """
-        Get the attack damage of the player.
-        """
-        return self.base_attack
-
     def acquire_gear(self, new_gear : Gear):
         """
         Acquire new gear.
@@ -130,7 +90,10 @@ class PlayerInfo(LocationContent):
                 self.health += heal_amount
                 if self.health > self.max_health:
                     self.health = self.max_health
-                acquire_msg += f'{new_gear.name} glows brightly then disappears in a flash, healing you for ⛑️ {heal_amount} health\n'
+                acquire_msg += (
+                    f'{new_gear.name} glows brightly then disappears in a flash, '
+                    f'healing you for ⛑️ {heal_amount} health\n'
+                )
                 return acquire_msg
         self.gear.append(new_gear)
         new_gear.apply_stats(self)
@@ -167,7 +130,7 @@ class PlayerInfo(LocationContent):
 
     def receive_damage(self, damage : int):
         """
-        Receive damage.
+        Receive damage from a source by an amount.
         """
         self.health -= damage
         if self.health <= 0:

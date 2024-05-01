@@ -5,7 +5,7 @@ import random
 
 from location import LocationContent
 from location import Location
-from player import PlayerInfo
+from player import PlayerCharacter
 from gear import Gear
 
 
@@ -81,7 +81,7 @@ class EnemyManager():
         gobbo.build_description()
         rusty_gobbo_dagger = Gear('Rusty Gobbo Dagger', 'A rusty dagger that goblins use')
         rusty_gobbo_dagger.icon = '🗡️'
-        rusty_gobbo_dagger.attack = 1
+        rusty_gobbo_dagger.offense = 1
         gobbo.drops.append(rusty_gobbo_dagger)
         self.add_enemy(gobbo)
         location.add_content(gobbo)
@@ -98,7 +98,7 @@ class EnemyManager():
         orc.build_description()
         first_orc_armor = Gear('Orcish Armor', 'Armor made from the hides of slain orcs')
         first_orc_armor.icon = '🛡️'
-        first_orc_armor.armor = 1
+        first_orc_armor.defense = 1
         orc.drops.append(first_orc_armor)
         self.add_enemy(orc)
         location.add_content(orc)
@@ -116,8 +116,8 @@ class EnemyManager():
         first_troll_magic_circlet = Gear('Troll Magic Circlet',
                         'A circlet that enhances the magical abilities of trolls')
         first_troll_magic_circlet.icon = '🔮'
-        first_troll_magic_circlet.attack = 5
-        first_troll_magic_circlet.armor = 3
+        first_troll_magic_circlet.offense = 5
+        first_troll_magic_circlet.defense = 3
         troll.drops.append(first_troll_magic_circlet)
         self.add_enemy(troll)
         location.add_content(troll)
@@ -134,7 +134,7 @@ class EnemyManager():
         dragon.build_description()
         first_dragon_armor = Gear('Dragon Scales', 'Armor made from the scales of a dragon')
         first_dragon_armor.icon = '🐲'
-        first_dragon_armor.armor = 5
+        first_dragon_armor.defense = 5
         dragon.drops.append(first_dragon_armor)
         self.add_enemy(dragon)
         location.add_content(dragon)
@@ -189,7 +189,7 @@ class Enemy(LocationContent):
         self.description = f'(❤️{self.health} 💪{self.power})'
         return self.description
 
-    def attack(self, player: PlayerInfo):
+    def attack(self, player: PlayerCharacter):
         """
         Performs an attack on the player.
         """
