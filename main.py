@@ -76,6 +76,13 @@ class DiscordBot(commands.Bot):
         player_name = context.author.name
         return self.game.take_item(player_name, item_name)
 
+    def use_consumable(self, context : commands.Context, consumable_name):
+        """
+        Use the consumable with the given name using the player with the given context.
+        """
+        player_name = context.author.name
+        return self.game.use_consumable(player_name, consumable_name)
+
 
 activity = discord.Game(name="Playing games, !help for commands")
 game_bot = DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
@@ -218,5 +225,19 @@ async def take(context, item_name):
         return
     take_msg = game_bot.take_item(context, item_name)
     await context.send(take_msg)
+
+@game_bot.command(name='use', help='Use a consumable from your inventory')
+async def use(context, consumable_name):
+    """ Command to use a consumable from the player's inventory. """
+    wrong_channel_msg = f'You must use the {GAME_CHANNEL} channel for this command.'
+    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+        # send the user a DM directing them to the game channel
+        await context.author.create_dm()
+        await context.author.dm_channel.send(
+            f'Hi {context.author.name}, {wrong_channel_msg}'
+        )
+        return
+    use_msg = game_bot.use_consumable(context, consumable_name)
+    await context.send(use_msg)
 
 game_bot.run(TOKEN)

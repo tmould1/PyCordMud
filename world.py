@@ -73,4 +73,3 @@ class Map():
         for row in self.map_icons:
             map_str += ' '.join(row) + '\n'
         return map_str
-

@@ -5,6 +5,7 @@ import math
 
 from character import Character
 from gear import Gear
+from consumables import HealthPotion
 
 class PlayerCharacter(Character):
     """
@@ -87,13 +88,12 @@ class PlayerCharacter(Character):
         heal_amount = 2
         for gear_piece in self.gear:
             if gear_piece.name == new_gear.name:
-                self.health += heal_amount
-                if self.health > self.max_health:
-                    self.health = self.max_health
+                health_potion = HealthPotion('Health Potion', 'Heals 2 health', heal_amount)
                 acquire_msg += (
-                    f'{new_gear.name} glows brightly then disappears in a flash, '
-                    f'healing you for ⛑️ {heal_amount} health\n'
+                    f'{new_gear.name} glows brightly then transforms in a flash, '
+                    f'in its place is a Health Potion ❤️\n'
                 )
+                self.acquire_consumable(health_potion)
                 return acquire_msg
         self.gear.append(new_gear)
         new_gear.apply_stats(self)
@@ -128,16 +128,6 @@ class PlayerCharacter(Character):
         relinquish_msg = f'You drop {gear_name}.\n'
         return relinquish_msg
 
-    def receive_damage(self, damage : int):
-        """
-        Receive damage from a source by an amount.
-        """
-        self.health -= damage
-        if self.health <= 0:
-            self.health = 0
-            return self.game.handle_player_death(self)
-        return f'🫵 {self.name} takes {damage} damage! 💥\n'
-
     def get_player_stats_string(self):
         """
         Get the string representation of the player's stats.
@@ -154,4 +144,8 @@ class PlayerCharacter(Character):
             gear_str += f'{gear.icon} {gear.name} - {gear.description}\n'
         stat_strings.append(gear_str)
         stat_msg = '\n'.join(stat_strings)
+        consumables_str = '[Consumables]\n'
+        for consumable in self.consumables:
+            consumables_str += f'{consumable.icon} {consumable.name} - {consumable.description}\n'
+        stat_msg += consumables_str
         return stat_msg

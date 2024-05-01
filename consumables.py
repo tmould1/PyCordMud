@@ -27,6 +27,8 @@ class Consumable(LocationContent):
         self.name = name
         self.description = description
         self.icon = '🍎'
+        self.charges = 1
+        self.max_charges = 1
 
     def use(self, character):
         """
@@ -35,7 +37,10 @@ class Consumable(LocationContent):
         Returns:
             str: The message that the consumable item was used.
         """
-        return ''
+        self.charges -= 1
+        if self.charges <= 0:
+            character.consumables.remove(self)
+        return f'You used {self.icon} {self.name}...... Talk to a dev.'
 
 class HealthPotion(Consumable):
     """
@@ -71,6 +76,7 @@ class HealthPotion(Consumable):
         character.health += self.health_points
         if character.health > character.max_health:
             character.health = character.max_health
+        super().use(character)
         return f'You used {self.icon} {self.name} and restored {self.health_points} health points.'
 
 class BarkSkinPotion(Consumable):
@@ -104,4 +110,5 @@ class BarkSkinPotion(Consumable):
         Returns:
             int: The defense points that the bark skin potion provides.
         """
+        super().use(character)
         return f'You used {self.icon} {self.name} and gained {self.defense_points} defense points.'

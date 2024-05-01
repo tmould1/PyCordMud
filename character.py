@@ -96,24 +96,27 @@ class Character(LocationContent):
             self.health = 0
             return self.game.handle_character_death(self)
         return f'🫵 {self.name} takes {damage} damage! 💥\n'
-    
+
     def acquire_consumable(self, consumable):
         """
         Acquire a consumable.
         """
         self.consumables.append(consumable)
-        return f'You acquire {consumable.name}'
-    
+        noun_participle = 'an' if consumable.name[0].lower() in 'aeiou' else 'a'
+        return f'You acquire {noun_participle} {consumable.name}'
+
     def use_consumable(self, consumable_name):
         """
         Use a consumable by name.
         """
         consumable_to_use = None
+        print(f'Checking {consumable_name} against {self.consumables}')
         for consumable in self.consumables:
-            if consumable.name.lower() == consumable_name.lower():
+            print(f'Checking {consumable.name} against {consumable_name}')
+            if consumable_name.lower() in consumable.name.lower():
                 consumable_to_use = consumable
                 break
         if consumable_to_use is None:
             return f'No consumable named {consumable_name} found in your inventory'
-        self.consumables.remove(consumable_to_use)
+        # Consumable will remove itself after charges are consumed
         return consumable_to_use.use(self)    

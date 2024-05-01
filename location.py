@@ -97,4 +97,3 @@ class Location():
             if isinstance(c, Enemy):
                 enemies.append(c)
         return enemies
-

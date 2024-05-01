@@ -189,3 +189,41 @@ def test_player_use_consumable_has_no_consumables():
 
     # Assert
     assert consumable_count == 0
+    
+def test_player_use_health_potion_restores_missing_health():
+    """
+    Test case for using a health potion and checking if the player's health is restored.
+    """
+    # Arrange
+    test_game = game.DiscordGame("Test Game")
+    tester_name = "Tester"
+    test_player = game.PlayerCharacter(tester_name, test_game)
+    test_consumable = consumables.HealthPotion("Health Potion", "A potion that restores health", 50)
+    test_player.health = 50
+    test_player.max_health = 100
+
+    # Act
+    test_player.acquire_consumable(test_consumable)
+    test_player.use_consumable(test_consumable.name)
+
+    # Assert
+    assert test_player.health == test_player.max_health
+    
+def test_player_use_health_potion_does_not_exceed_max_health():
+    """
+    Test case for using a health potion and checking if the player's health does not exceed the max health.
+    """
+    # Arrange
+    test_game = game.DiscordGame("Test Game")
+    tester_name = "Tester"
+    test_player = game.PlayerCharacter(tester_name, test_game)
+    test_consumable = consumables.HealthPotion("Health Potion", "A potion that restores health", 50)
+    test_player.health = 75
+    test_player.max_health = 100
+
+    # Act
+    test_player.acquire_consumable(test_consumable)
+    test_player.use_consumable(test_consumable.name)
+
+    # Assert
+    assert test_player.health == test_player.max_health
