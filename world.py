@@ -1,7 +1,13 @@
 """ 
 This module contains the map logic for the game.
 """
+
+import math
+
+from perlin_noise import PerlinNoise
+
 from location import Location
+import biome
 
 class Map():
     """
@@ -13,6 +19,14 @@ class Map():
         self.map_icons = []
         self.map_size = (1, 1)
         self.out_of_bounds = '⬛'
+
+        self.biomes = [
+            biome.Desert(),
+            biome.Meadows(),
+            biome.Ocean(),
+            biome.Forest(),
+            biome.Mountain()
+        ]
 
     def create_map_location_data(self, size=(5, 5)):
         """
@@ -38,6 +52,36 @@ class Map():
                     row.append(location)
             self.map_location_data.append(row)
 
+    def build_perlin_map_clamped_to_integers(self, size=(5, 5), octaves=8):
+        """
+        Build a perlin map clamped to integers.
+        """
+        self.map_size = size
+        noise = PerlinNoise(octaves=octaves, seed=1)
+        self.map_location_data = []
+        scale = len(self.biomes)
+        offset = 0.5
+        for i in range(self.map_size[0]):
+            row = []
+            for j in range(self.map_size[1]):
+                noise_val = noise([i / scale, j / scale]) + offset
+                closest_int = math.floor(noise_val * scale)
+                if closest_int >= scale:
+                    closest_int = scale - 1
+                selected_biome = self.get_biome(closest_int)
+                location = Location(selected_biome.name, selected_biome.description, (i, j), selected_biome)
+                location.map_icon = selected_biome.icon
+                row.append(location)
+            self.map_location_data.append(row)
+
+    def get_biome(self, index):
+        """
+        Get the biome by index.
+        """
+        if 0 <= index < len(self.biomes):
+            return self.biomes[int(index)]
+        return None
+
     def update_map_icons(self):
         """
         Update the map icons.
@@ -59,7 +103,9 @@ class Map():
                     else:
                         self.map_location_data[i][j].map_icon = map_location.contents[0].icon
                 else:
-                    self.map_location_data[i][j].map_icon = map_location.default_icon
+                    self.map_location_data[i][j].map_icon = (
+                        map_location.biome.icon if map_location.biome is not None else self.out_of_bounds
+                    )
         self.map_icons = [
             [map_location.map_icon for map_location in row]
             for row in self.map_location_data

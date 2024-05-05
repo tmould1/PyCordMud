@@ -136,3 +136,115 @@ def test_map_string_remove_gear_hides_icon():
     assert test_map.map_location_data[0][0].has_contents() is False
     assert test_map.map_icons[0][0] == initial_icon
     assert test_map.map_icons[0][0] in map_str
+
+def test_map_create_3_by_3_map():
+    """
+    Test if the map creation logic creates a 3x3 map.
+    """
+    # Arrange
+    test_map = world.Map()
+
+    # Act
+    test_map.create_map_location_data((3, 3))
+
+    # Assert
+    assert len(test_map.map_location_data) == 3
+    assert len(test_map.map_location_data[0]) == 3
+
+def test_map_create_5_by_5_map():
+    """
+    Test if the map creation logic creates a 5x5 map.
+    """
+    # Arrange
+    test_map = world.Map()
+
+    # Act
+    test_map.create_map_location_data((5, 5))
+
+    # Assert
+    assert len(test_map.map_location_data) == 5
+    assert len(test_map.map_location_data[0]) == 5
+
+def test_map_create_10_by_10_map():
+    """
+    Test if the map creation logic creates a 10x10 map.
+    """
+    # Arrange
+    test_map = world.Map()
+
+    # Act
+    test_map.create_map_location_data((10, 10))
+
+    # Assert
+    assert len(test_map.map_location_data) == 10
+    assert len(test_map.map_location_data[0]) == 10
+
+def test_map_build_perlin_map_clamped_to_integers():
+    """
+    Test if the map creation logic creates a perlin map clamped to integers.
+    """
+    # Arrange
+    test_map = world.Map()
+
+    # Act
+    test_map.build_perlin_map_clamped_to_integers()
+
+    # Assert
+    assert len(test_map.map_location_data) > 0
+
+def test_map_build_perlin_test_variance():
+    """
+    Test if the map creation logic creates a perlin map with variance.
+    """
+    # Arrange
+    test_map = world.Map()
+    test_map.build_perlin_map_clamped_to_integers()
+
+    # Act
+    num_diff_biomes = len({location.biome for row in test_map.map_location_data
+                           for location in row})
+
+    # Assert
+    assert 0 < num_diff_biomes < len(test_map.biomes)
+
+def test_map_getbiomewithnegative_returnsnone():
+    """
+    Test if get_biome_with_negative returns None when no negative value is found.
+    """
+    # Arrange
+    test_map = world.Map()
+    test_map.build_perlin_map_clamped_to_integers()
+
+    # Act
+    biome = test_map.get_biome(-1)
+
+    # Assert
+    assert biome is None
+
+def test_map_getbiomewithlargeindex_returnsnone():
+    """
+    Test if get_biome_with_negative returns None when the index is larger than the biomes list.
+    """
+    # Arrange
+    test_map = world.Map()
+    test_map.build_perlin_map_clamped_to_integers()
+
+    # Act
+    biome = test_map.get_biome(len(test_map.biomes))
+
+    # Assert
+    assert biome is None
+
+def test_map_getbiomewithvalidindex_returnsbiome():
+    """
+    Test if get_biome_with_negative returns the correct biome when the index is valid.
+    """
+    # Arrange
+    test_map = world.Map()
+    test_map.build_perlin_map_clamped_to_integers()
+
+    # Act
+    biome = test_map.get_biome(0)
+
+    # Assert
+    assert biome is not None

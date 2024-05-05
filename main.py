@@ -5,7 +5,13 @@ If you don't have this token yet, local_run.py is an entry point for local testi
 The main things being done here are:
 - Setting up the discord bot.
 - Registering event handlers to tie discord commands to python game functions
-  through the DiscordBot object. Event handlers verify discord data before passing to game.DiscordBot.
+  through the DiscordBot object. 
+- Event handlers verify discord data before passing to game.DiscordBot.
+
+Main Flow:
+1) Setup the discord game bot with the token and activity.
+2) Register event handlers for the bot.
+3) Run the bot with the token.
 """
 
 import os
@@ -14,82 +20,26 @@ import random
 from discord.ext import commands
 import discord.utils
 
-import game
+import discord_interface_game
 
 TOKEN = os.getenv('DISCORD_TOKEN') # This token comes from the Discord Developer Portal
 GUILD = "test"
 GAME_CHANNEL = "game"
 
-
-# Handles Context extraction
-class DiscordBot(commands.Bot):
-    """
-    DiscordBot class for handling the Discord bot functionality.
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.game = game.DiscordGame("JoPy")
-
-    def joingame(self, context : commands.Context):
-        """
-        Join the game with the given context.
-        """
-        joining_player = context.author.name
-        self.game.add_player(joining_player)
-
-    def show_player_surroundings(self, context : commands.Context):
-        """
-        Show the surroundings of the player with the given context.
-        """
-        return self.game.show_player_surroundings(context.author.name)
-
-    def move_player(self, context : commands.Context, direction):
-        """
-        Move the player with the given context in the specified direction.
-        """
-        return self.game.move_player(context.author.name, direction)
-
-    def attack_enemy(self, context : commands.Context, target_name):
-        """
-        Attack the enemy with the given context and target name.
-        """
-        return self.game.attack_enemy(context.author.name, target_name)
-
-    def show_player_stats(self, context : commands.Context):
-        """
-        Show the stats of the player with the given context.
-        """
-        player_name = context.author.name
-        return self.game.show_player_stats(player_name)
-
-    def show_player_inventory(self, context : commands.Context):
-        """
-        Show the inventory of the player with the given context.
-        """
-        player_name = context.author.name
-        return self.game.show_player_inventory(player_name)
-
-    def take_item(self, context : commands.Context, item_name):
-        """
-        Take the item with the given name using the player with the given context.
-        """
-        player_name = context.author.name
-        return self.game.take_item(player_name, item_name)
-
-    def use_consumable(self, context : commands.Context, consumable_name):
-        """
-        Use the consumable with the given name using the player with the given context.
-        """
-        player_name = context.author.name
-        return self.game.use_consumable(player_name, consumable_name)
-
+#######################################################
+### 1) Discord Bot Setup and Initialization Below  ####
+#######################################################
 
 activity = discord.Game(name="PyCordMud, !help")
-game_bot = DiscordBot(activity=activity, intents=discord.Intents.all(), command_prefix='!')
+game_bot = discord_interface_game.DiscordBot(
+    activity=activity,
+    intents=discord.Intents.all(),
+    command_prefix='!'
+)
 
-####################################################
-### Event Handlers and Command Definitions Below ###
-####################################################
+#######################################################
+### 2) Event Handlers and Command Definitions Below ###
+#######################################################
 @game_bot.event
 async def on_ready():
     """ Event handler for when the bot is ready. """
@@ -115,18 +65,36 @@ async def on_member_join(member):
 async def playgame(context):
     """ Command to start a game in the game channel. """
     print(f'Received playgame command from {context.author.name} in channel {context.channel.name}')
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    is_game_channel = context.channel == discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL)
+    is_dm_channel = isinstance(context.channel, discord.DMChannel)
+    if not is_game_channel and not is_dm_channel:
         # Send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
+            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel '
+            f'to "!playgame".'
         )
         return
-    await context.send("Let's play a game! 🎮")
+
+    await context.send("Adding you to the game... 🎮")
+
     if game_bot.game.is_playing(context.author.name) is False:
         game_bot.joingame(context)
-    await context.send("Here's the map:")
-    await context.send(game_bot.show_player_surroundings(context))
+
+    connected_players = [player.name for player in game_bot.game.players]
+    connected_players_string = (
+        f' Players Online ({len(connected_players)}):\n '
+        f'{"\n".join(connected_players)}'
+    )
+    await context.send(connected_players_string)
+
+    member = game_bot.get_player_discord_member(context.author.name)
+    first_messages = [
+        "Welcome to the game! 🎮", "Let's play!",
+        "Here's the map:", 
+        game_bot.show_player_surroundings(context)
+    ]
+    await member.send('\n'.join(first_messages))
 
 @game_bot.command(name='rolldice', help='Rolls some dice')
 async def roll_dice(context, number_of_dice: int, number_of_sides: int):
@@ -164,59 +132,68 @@ async def on_command_error(context, error):
 @game_bot.command(name='move', help='Move your player on the map')
 async def move(context, direction : str):
     """ Command to move the player on the map. """
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
+            f'Hi {context.author.name}, {wrong_channel_msg}'
         )
         return
+    member = game_bot.get_player_discord_member(context.author.name)
     move_msg = game_bot.move_player(context, direction)
-    await context.send(move_msg)
-    await context.send(game_bot.show_player_surroundings(context))
+    await member.send(move_msg)
+    await member.send(game_bot.show_player_surroundings(context))
 
 @game_bot.command(name='showmap', help='Show the map')
 async def show_map(context):
     """ Command to show the map. """
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
+            f'Hi {context.author.name}, {wrong_channel_msg}'
         )
         return
-    await context.send(game_bot.show_player_surroundings(context))
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send(game_bot.show_player_surroundings(context))
 
 @game_bot.command(name='attack', help='Attack an enemy')
 async def attack(context, target_name):
     """ Command to attack an enemy. """
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
+            f'Hi {context.author.name}, {wrong_channel_msg}'
         )
         return
     attack_msg = game_bot.attack_enemy(context, target_name)
-    await context.send(attack_msg)
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send(attack_msg)
 
 @game_bot.command(name='stats', help='Show player stats')
 async def stats(context):
     """ Command to show player stats. """
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel for game-related messages.'
+            f'Hi {context.author.name}, {wrong_channel_msg}'
         )
         return
-    await context.send(game_bot.show_player_stats(context))
+    stats_msg = game_bot.show_player_stats(context)
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send(stats_msg)
 
 @game_bot.command(name='take', help='Take an item')
 async def take(context, item_name):
     """ Command to take an item from a location. """
-    wrong_channel_msg = f'You must use the {GAME_CHANNEL} channel for this command.'
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
@@ -224,13 +201,14 @@ async def take(context, item_name):
         )
         return
     take_msg = game_bot.take_item(context, item_name)
-    await context.send(take_msg)
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send(take_msg)
 
 @game_bot.command(name='use', help='Use a consumable from your inventory')
 async def use(context, consumable_name):
     """ Command to use a consumable from the player's inventory. """
-    wrong_channel_msg = f'You must use the {GAME_CHANNEL} channel for this command.'
-    if context.channel != discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL):
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
         # send the user a DM directing them to the game channel
         await context.author.create_dm()
         await context.author.dm_channel.send(
@@ -238,6 +216,27 @@ async def use(context, consumable_name):
         )
         return
     use_msg = game_bot.use_consumable(context, consumable_name)
-    await context.send(use_msg)
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send(use_msg)
+    
+@game_bot.command(name='testcheats', help='Test cheats')
+async def test_cheats(context):
+    """ Command to test cheats. """
+    wrong_channel_msg = 'You must use DMs for this command.'
+    if not isinstance(context.channel, discord.DMChannel):
+        # send the user a DM directing them to the game channel
+        await context.author.create_dm()
+        await context.author.dm_channel.send(
+            f'Hi {context.author.name}, {wrong_channel_msg}'
+        )
+        return
+    member = game_bot.get_player_discord_member(context.author.name)
+    await member.send("Testing cheats...")
+    game_bot.game.test_cheats(context.author.name, context.message.content)
+    await member.send(game_bot.show_player_surroundings(context))
+
+#######################################################
+### 3) Run the Bot with the Token Below            ####
+#######################################################
 
 game_bot.run(TOKEN)

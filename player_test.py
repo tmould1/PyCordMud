@@ -110,7 +110,7 @@ def test_player_adding_gear_with_stats_increases_player_stats():
     test_player.acquire_gear(test_gear)
 
     # Assert
-    assert test_player.base_attack == base_attack + test_gear.offense
+    assert test_player.get_attack_damage() == base_attack + test_gear.offense
     assert test_player.max_health == max_health + test_gear.defense
 
 def test_player_removing_gear_with_stats_decreases_player_stats():
@@ -126,14 +126,14 @@ def test_player_removing_gear_with_stats_decreases_player_stats():
     test_gear.offense = 5
     test_gear.defense = 5
     test_player.acquire_gear(test_gear)
-    base_attack = test_player.base_attack
+    base_attack = test_player.get_attack_damage()
     max_health = test_player.max_health
 
     # Act
     test_player.relinquish_gear(test_gear.name)
 
     # Assert
-    assert test_player.base_attack == base_attack - test_gear.offense
+    assert test_player.get_attack_damage() == base_attack - test_gear.offense
     assert test_player.max_health == max_health - test_gear.defense
 
 
@@ -189,7 +189,7 @@ def test_player_use_consumable_has_no_consumables():
 
     # Assert
     assert consumable_count == 0
-    
+
 def test_player_use_health_potion_restores_missing_health():
     """
     Test case for using a health potion and checking if the player's health is restored.
@@ -208,7 +208,7 @@ def test_player_use_health_potion_restores_missing_health():
 
     # Assert
     assert test_player.health == test_player.max_health
-    
+
 def test_player_use_health_potion_does_not_exceed_max_health():
     """
     Test case for using a health potion and checking if the player's health does not exceed the max health.

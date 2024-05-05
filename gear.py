@@ -15,10 +15,8 @@ class Gear(LocationContent):
 
     def apply_stats(self, player):
         """ Apply the stats of the gear to the player. """
-        player.base_attack += self.offense
         player.max_health += self.defense
 
     def remove_stats(self, player):
         """ Remove the stats of the gear from the player."""
-        player.base_attack -= self.offense
         player.max_health -= self.defense

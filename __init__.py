@@ -7,3 +7,5 @@ import enemy
 import game
 import world
 import consumables
+import discord_interface_game
+import biome

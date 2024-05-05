@@ -14,7 +14,7 @@ def test_game_init_has_world():
     test_game = game.DiscordGame("Test Game")
 
     # Act
-    test_game.create_map()
+    test_game.create_map((1,1))
 
     # Assert
     assert test_game.get_map() is not None
@@ -68,11 +68,10 @@ def test_show_player_surroundings_has_contents():
     # Arrange
     test_game = game.DiscordGame("Test Game")
     tester_name = "Tester"
-    test_player = game.PlayerCharacter(tester_name, test_game)
-    test_game.add_player(test_player)
+    test_player = test_game.add_player(tester_name)
 
     # Act
-    result = test_game.show_player_surroundings(tester_name)
+    result = test_game.show_player_surroundings(test_player.name)
 
     # Assert
     assert result is not None
@@ -88,8 +87,7 @@ def test_player_gets_health_potion_on_duplicate_gear_acquisition():
     # Arrange
     test_game = game.DiscordGame("Test Game")
     tester_name = "Tester"
-    test_player = game.PlayerCharacter(tester_name, test_game)
-    test_game.add_player(tester_name)
+    test_player = test_game.add_player(tester_name)
     test_gear = gear.Gear('Test Gear', 'A test piece of gear')
     cloned_test_gear = gear.Gear('Test Gear', 'A test piece of gear')
     test_health_potion = consumables.HealthPotion("Health Potion", "A potion that restores health.", 10)
@@ -102,6 +100,21 @@ def test_player_gets_health_potion_on_duplicate_gear_acquisition():
     # Assert
     assert len(test_player.consumables) == initial_consumables + 1
     assert test_player.consumables[-1].name == test_health_potion.name
+    
+def test_game_get_player_by_name_returns_player():
+    """
+    Test if the game gets the player by name.
+    """
+    # Arrange
+    test_game = game.DiscordGame("Test Game")
+    tester_name = "Tester"
+    test_player = test_game.add_player(tester_name)
+
+    # Act
+    result = test_game.get_player_by_name(tester_name)
+
+    # Assert
+    assert result is test_player
 
 def test_game_player_use_potion_restores_health():
     """
@@ -110,8 +123,7 @@ def test_game_player_use_potion_restores_health():
     # Arrange
     test_game = game.DiscordGame("Test Game")
     tester_name = "Tester"
-    test_player = game.PlayerCharacter(tester_name, test_game)
-    test_game.add_player(tester_name)
+    test_player = test_game.add_player(tester_name)
     test_health_potion = consumables.HealthPotion("Health Potion", "A restorative potion.", 2)
     print(test_player.acquire_consumable(test_health_potion))
 
@@ -123,3 +135,17 @@ def test_game_player_use_potion_restores_health():
 
     # Assert
     assert test_player.health == initial_health + test_health_potion.health_points
+
+def test_game_create_map_10_by_10_map():
+    """
+    Test if the game creates a 10x10 map.
+    """
+    # Arrange
+    test_game = game.DiscordGame("Test Game")
+
+    # Act
+    test_game.create_map((10, 10))
+
+    # Assert
+    assert len(test_game.map.map_location_data) == 10
+    assert len(test_game.map.map_location_data[0]) == 10

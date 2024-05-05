@@ -10,13 +10,13 @@ class DiscordGame():
     """
     DiscordGame class for handling the game logic.
     """
-    def __init__(self, name, size = (5, 5)):
+    def __init__(self, name, size = (10, 10)):
         print(f'Initializing game {name}')
         self.name = name
         self.players = []
         self.map_size = size
         self.map = Map()
-        self.create_map()
+        self.create_map(size)
         self.enemy_mgr = EnemyManager(self)
         self.enemy_mgr.initial_seed()
         self.goblin_kills = 0
@@ -26,11 +26,11 @@ class DiscordGame():
         self.update_shown_map()
         print(f'Game {name} initialized successfully! 🎮')
 
-    def create_map(self):
+    def create_map(self, size=(1,1)):
         """
         Create the game map.
         """
-        self.map.create_map_location_data(size = self.map_size)
+        self.map.build_perlin_map_clamped_to_integers(size)
 
     def update_shown_map(self):
         """
@@ -49,7 +49,7 @@ class DiscordGame():
         Check if the player is playing the game.
         """
         return player_name in [player.name for player in self.players]
-  
+
     def add_player(self, player_name):
         """
         Add a player to the game.
@@ -59,16 +59,15 @@ class DiscordGame():
         new_player = PlayerCharacter(player_name, self)
         print(f'Adding player {new_player.name} to the game')
         self.players.append(new_player)
+        return new_player
 
     def move_player(self, player_name, direction):
         """
         Move the player with the given name in the specified direction.
         """
-        player = None
-        for p in self.players:
-            if p.name == player_name:
-                player = p
-                break
+        player = self.get_player_by_name(player_name)
+        if player is None:
+            return self.build_player_not_found_msg(player_name)
         return player.move(direction)
 
     def build_player_not_found_msg(self, player_name):
@@ -81,11 +80,7 @@ class DiscordGame():
         """
         Show the surroundings of the player with the given name.
         """
-        player = None
-        for connected_player in self.players:
-            if connected_player.name == player_name:
-                player = connected_player
-                break
+        player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
         return player.show_surroundings()  
@@ -95,11 +90,7 @@ class DiscordGame():
         Attack the enemy with the given name using the player with the given name.
         """
         attack_msg = ''
-        player = None
-        for p in self.players:
-            if p.name == player_name:
-                player = p
-                break
+        player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
         attack_msg = player.attack(target_name)
@@ -109,11 +100,7 @@ class DiscordGame():
         """
         Show the stats of the player with the given name.
         """
-        player = None
-        for p in self.players:
-            if p.name == player_name:
-                player = p
-                break
+        player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
 
@@ -142,11 +129,7 @@ class DiscordGame():
         Take an item with the given name using the player with the given name.
         """
         take_msg = ''
-        player = None
-        for p in self.players:
-            if p.name == player_name:
-                player = p
-                break
+        player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
 
@@ -170,11 +153,7 @@ class DiscordGame():
         Use a consumable with the given name using the player with the given name.
         """
         use_msg = ''
-        player = None
-        for p in self.players:
-            if p.name == player_name:
-                player = p
-                break
+        player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
 
@@ -184,6 +163,15 @@ class DiscordGame():
     ############################################
     ### Internal game logic handling methods ###
     ############################################
+    
+    def get_player_by_name(self, player_name):
+        """
+        Get a player by name.
+        """
+        for player in self.players:
+            if player.name == player_name:
+                return player
+        return None
 
     def handle_player_death(self, player):
         """
@@ -199,3 +187,20 @@ class DiscordGame():
         if isinstance(character, PlayerCharacter):
             return self.handle_player_death(character)
         return f'{character.name} has died! 💀\n'
+    
+    def test_cheats(self, player_name, message_content):
+        """
+        Test cheats.
+        """
+        print(f'Player {player_name} is testing cheats {message_content}')
+        message_array = message_content.split(' ')
+        requested_cheat = message_array[1].lower()
+
+        cheat_response_msg = ''
+        if requested_cheat == 'heal':
+            player = self.get_player_by_name(player_name)
+            max_health = player.max_health
+            player.heal(max_health)
+            cheat_response_msg = f'{player_name} has been healed to full health!'
+        
+        return cheat_response_msg

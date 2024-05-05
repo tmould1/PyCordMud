@@ -76,7 +76,11 @@ class Character(LocationContent):
         """
         Get the attack damage of the player.
         """
-        return self.base_attack
+        base_attack = self.base_attack
+        gear_attack = sum([gear.offense for gear in self.gear])
+        
+        total_attack = base_attack + gear_attack
+        return total_attack
 
     def is_alive(self):
         """
@@ -119,4 +123,14 @@ class Character(LocationContent):
         if consumable_to_use is None:
             return f'No consumable named {consumable_name} found in your inventory'
         # Consumable will remove itself after charges are consumed
-        return consumable_to_use.use(self)    
+        return consumable_to_use.use(self)
+
+    def heal(self, amount):
+        """
+        Heal the character by an amount.
+        """
+        self.health += amount
+        overheal = self.health - self.max_health
+        if self.health > self.max_health:
+            self.health = self.max_health
+        return f'🩹 {self.name} heals {amount} health ({overheal} overhealed)! ❤️\n'

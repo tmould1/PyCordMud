@@ -14,7 +14,8 @@ class PlayerCharacter(Character):
     def __init__(self, name, game):
         super().__init__(game, name, '💩💩💩', 3, 1)
         self.icon = '🧙‍♂️'
-        self.position = (2, 2)
+        center_of_map = (math.floor(game.map_size[0] / 2), math.floor(game.map_size[1] / 2))
+        self.position = center_of_map
 
     def move(self, direction):
         """
@@ -135,15 +136,21 @@ class PlayerCharacter(Character):
         stat_strings = [
             f'Player: {self.name}',
             f'Description: {self.description}',
-            f'Attack: {self.base_attack}',
         ]
+
+        # Build attack string with base attack and gear attack
+        attack_string_emojis = '⚔️' * self.get_attack_damage()
+        stat_strings.append(f'Attack: {attack_string_emojis}')
+
         health_string_emojis = '❤️' * self.health + '🩶' * (self.max_health - self.health)
         stat_strings.append(f'Health: {health_string_emojis}')
+
         gear_str = '[Gear]\n'
         for gear in self.gear:
             gear_str += f'{gear.icon} {gear.name} - {gear.description}\n'
         stat_strings.append(gear_str)
         stat_msg = '\n'.join(stat_strings)
+
         consumables_str = '[Consumables]\n'
         for consumable in self.consumables:
             consumables_str += f'{consumable.icon} {consumable.name} - {consumable.description}\n'

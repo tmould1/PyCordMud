@@ -13,6 +13,7 @@ class LocationContent():
         self.name = ''
         self.icon = ''
         self.description = ''
+        self.biome = None
 
     def location_display(self):
         """
@@ -25,16 +26,17 @@ class Location():
     Represents a location.
     """
 
-    def __init__(self, name, description, coordinates=(0, 0)):
+    def __init__(self, name, description, coordinates=(0, 0), biome=None):
         """
         Initializes a new Location instance.
         """
         self.name = name
         self.description = description
         self.default_icon = '🟦'
-        self.map_icon = self.default_icon
+        self.map_icon = biome.icon if biome is not None else self.default_icon
         self.contents = []
         self.coordinates = coordinates
+        self.biome = biome
 
     def add_content(self, content):
         """
