@@ -231,14 +231,17 @@ class MudGame():
         for player in self.players:
             if player.name == player_name:
                 return player
+        print("Player not found")
         return None
 
     def handle_player_death(self, player):
         """
         Handle the death of a player.
         """
-        self.players.remove(player)
-        return f'{player.name} has died! 💀\n'
+        player.reset_player()
+        death_msg = f'{player.name} has died and been returned to the start! 💀\n'
+        map_msg = player.show_surroundings()
+        return death_msg + map_msg
     
     def handle_character_death(self, character):
         """

@@ -124,7 +124,10 @@ class PlayerCommand_Move(PlayerCommand):
 
     def execute(self, player : PlayerCharacter, args : list[str]):
         direction = " ".join(args)
-        return player.move(direction)
+        move_msg = player.move(direction)
+        player.game.update_shown_map()
+        map_msg = player.show_surroundings()
+        return move_msg + "\n" + map_msg
 
 class PlayerCommand_North(PlayerCommand_Move):
     def __init__(self):
@@ -133,7 +136,7 @@ class PlayerCommand_North(PlayerCommand_Move):
         self.args = []
 
     def execute(self, player : PlayerCharacter, args : list[str]):
-        return player.move("north")
+        return super().execute(player, ["north"])
 
 class PlayerCommand_South(PlayerCommand_Move):
     def __init__(self):
@@ -142,7 +145,7 @@ class PlayerCommand_South(PlayerCommand_Move):
         self.args = []
 
     def execute(self, player : PlayerCharacter, args : list[str]):
-        return player.move("south")
+        return super().execute(player, ["south"])
 
 class PlayerCommand_East(PlayerCommand_Move):
     def __init__(self):
@@ -151,7 +154,7 @@ class PlayerCommand_East(PlayerCommand_Move):
         self.args = []
 
     def execute(self, player : PlayerCharacter, args : list[str]):
-        return player.move("east")
+        return super().execute(player, ["east"])
 
 class PlayerCommand_West(PlayerCommand_Move):
     def __init__(self):
@@ -160,4 +163,4 @@ class PlayerCommand_West(PlayerCommand_Move):
         self.args = []
 
     def execute(self, player : PlayerCharacter, args : list[str]):
-        return player.move("west")
+        return super().execute(player, ["west"])

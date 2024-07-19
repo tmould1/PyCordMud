@@ -12,10 +12,25 @@ class PlayerCharacter(Character):
     Represents information about a player.
     """
     def __init__(self, name, game):
-        super().__init__(game, name, '💩💩💩', 3, 1)
+        self.defaults = {
+            'health': 3,
+            'attack_power': 1
+        }
+        super().__init__(game, name, '💩💩💩', health = self.defaults['health'], attack_power=self.defaults['attack_power'])
         self.icon = '🧙‍♂️'
         center_of_map = (math.floor(game.map_size[0] / 2), math.floor(game.map_size[1] / 2))
         self.position = center_of_map
+    
+    def reset_player(self):
+        """
+        Reset the player to the initial state.
+        """
+        self.health = self.defaults['health']
+        self.base_attack = self.defaults['attack_power']
+        self.position = (math.floor(self.game.map_size[0] / 2), math.floor(self.game.map_size[1] / 2))
+        self.gear = []
+        self.consumables = []
+        self.description = '💩💩💩'
 
     def move(self, direction):
         """

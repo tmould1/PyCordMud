@@ -114,9 +114,9 @@ class Character(LocationContent):
         Use a consumable by name.
         """
         consumable_to_use = None
-        print(f'Checking {consumable_name} against {self.consumables}')
+        #print(f'Checking {consumable_name} against {self.consumables}')
         for consumable in self.consumables:
-            print(f'Checking {consumable.name} against {consumable_name}')
+            #print(f'Checking {consumable.name} against {consumable_name}')
             if consumable_name.lower() in consumable.name.lower():
                 consumable_to_use = consumable
                 break
