@@ -48,18 +48,19 @@ class MudGame():
         while True:
             game_bound_messages = self.game_bound.get_all_messages()
             for msg in game_bound_messages:
-                print(f'Game received message: {msg}')
+                #print(f'Game received message: {msg}')
                 message_array = msg.split(' ')
                 player_name = message_array[0]
+                player = self.get_player_by_name(player_name)
                 message_content = ' '.join(message_array[1:])
                 response = ""
                 if message_content.startswith('!'):
                     response = self.test_cheats(player_name, message_content)
                     #print(f'Response: {response}')
                 else:
-                    player = self.get_player_by_name(player_name)
                     response = self.handle_input(player, message_content)
                     #print(f'Response: {response}')
+                response += "\n" + player.get_prompt_status()
                 self.player_bound.add_message(response)
             time.sleep(0.1)
         
@@ -126,6 +127,15 @@ class MudGame():
         Build a message for a player not found.
         """
         return f'Player {player_name} not found in these players 🤷‍♂️ Have you joined?'
+
+    def send_message_to_player(self, player, message):
+        """
+        Send a message to a player.
+        """
+        if self.player_bound is not None:
+            self.player_bound.add_message(message)
+        else:
+            print(message)
 
     ############################
     ### Game command methods ###

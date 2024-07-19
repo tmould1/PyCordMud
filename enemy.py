@@ -3,7 +3,7 @@ This module manages the enemies in the game.
 """
 import random
 
-from location import LocationContent
+from character import Character
 from location import Location
 from player import PlayerCharacter
 from gear import Gear
@@ -170,13 +170,13 @@ class EnemyManager():
         self.game.update_shown_map()
 
 
-class Enemy(LocationContent):
+class Enemy(Character):
     """
     Represents an enemy in the game.
     """
 
     def __init__(self, name, location: Location, manager: EnemyManager):
-        super().__init__()
+        super().__init__(manager.game, name, '👾', health=1, attack_power=1)
         self.name = name
         self.icon = '👾'
         self.location = location
@@ -188,6 +188,9 @@ class Enemy(LocationContent):
         self.description = self.build_description()
 
         self.drops = []
+        
+        #temp
+        self.chance_to_move = 100
 
     def build_description(self):
         """
@@ -238,18 +241,26 @@ class Enemy(LocationContent):
         """
         random_roll = random.randint(1, 100)
         # 10% chance to move
-        if random_roll <= 10:
+        if random_roll <= self.chance_to_move:
             random_x = random.randint(-1, 1)
             random_y = random.randint(-1, 1)
             new_x = self.location.coordinates[0] + random_x
-            new_y = self.location.coordinates[1]+ random_y
+            new_y = self.location.coordinates[1] + random_y
             if new_x < 0 or new_x >= self.manager.game.map_size[0]:
                 new_x = self.location.coordinates[0]
             if new_y < 0 or new_y >= self.manager.game.map_size[1]:
                 new_y = self.location.coordinates[1]
-            new_location = self.manager.game.map.map_location_data[new_x][new_y]
-            self.location.remove_content(self)
-            new_location.add_content(self)
-            self.location = new_location
+            leaving_direction = ''
+
+            if random_x == -1:
+                leaving_direction = 'north'
+            elif random_x == 1:
+                leaving_direction = 'south'
+            elif random_y == -1:
+                leaving_direction = 'west'
+            elif random_y == 1:
+                leaving_direction = 'east'
+
+            self.move(leaving_direction)
             self.manager.game.update_shown_map()
-            print(f'{self.name} moved to {self.location.name}\n')
+            #print(f'{self.name} moved to {self.location.name}\n')

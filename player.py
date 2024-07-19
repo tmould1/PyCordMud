@@ -20,6 +20,7 @@ class PlayerCharacter(Character):
         self.icon = '🧙‍♂️'
         center_of_map = (math.floor(game.map_size[0] / 2), math.floor(game.map_size[1] / 2))
         self.position = center_of_map
+        self.game = game
     
     def reset_player(self):
         """
@@ -31,38 +32,6 @@ class PlayerCharacter(Character):
         self.gear = []
         self.consumables = []
         self.description = '💩💩💩'
-
-    def move(self, direction):
-        """
-        Move the player in the specified direction.
-        """
-        direction = direction.lower()
-        move_msg = f'You move {direction}'
-
-        initial_position = self.position
-        if direction == 'north':
-            self.position = (self.position[0] - 1, self.position[1])
-        elif direction == 'south':
-            self.position = (self.position[0] + 1, self.position[1])
-        elif direction == 'west':
-            self.position = (self.position[0], self.position[1] - 1)
-        elif direction == 'east':
-            self.position = (self.position[0], self.position[1] + 1)
-
-        # bounds check on map size
-        x_min, y_min = 0, 0
-        x_max, y_max = self.game.map_size
-
-        if (
-            self.position[0] < x_min or
-            self.position[0] >= x_max or
-            self.position[1] < y_min or
-            self.position[1] >= y_max
-        ):
-            move_msg = f'You cannot move {direction}'
-            self.position = initial_position
-
-        return move_msg
 
     def show_surroundings(self):
         """
@@ -190,3 +159,19 @@ class PlayerCharacter(Character):
         location.remove_content(item)
         self.game.update_shown_map()
         return take_msg
+
+    def get_prompt_status(self):
+        """
+        Show the status of the player in the prompt.
+        """
+        health_string_emojis = '❤️' * self.health + '🩶' * (self.max_health - self.health)
+        prompt_status = f'{self.icon} {self.name} {health_string_emojis}\n'
+        return prompt_status
+
+    def receive_message(self, msg):
+        """
+        Receives a message.
+        """
+        super().receive_message(msg)
+        self.game.send_message_to_player(self, msg)
+        

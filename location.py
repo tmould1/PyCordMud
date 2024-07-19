@@ -21,6 +21,12 @@ class LocationContent():
         """
         return f'{self.icon} {self.name} is here. {self.description}'
 
+    def receive_message(self, msg):
+        """
+        Receives a message.
+        """
+        pass
+
 class Location():
     """
     Represents a location.
@@ -99,3 +105,10 @@ class Location():
             if isinstance(c, Enemy):
                 enemies.append(c)
         return enemies
+
+    def send_message_to_contents(self, message):
+        """
+        Sends a message to the contents of the location.
+        """
+        for c in self.contents:
+            c.receive_message(message)

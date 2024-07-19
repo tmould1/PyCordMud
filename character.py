@@ -134,3 +134,51 @@ class Character(LocationContent):
         if self.health > self.max_health:
             self.health = self.max_health
         return f'🩹 {self.name} heals {amount} health ({overheal} overhealed)! ❤️\n'
+
+    def move(self, direction):
+        """
+        Move the player in the specified direction.
+        """
+        old_location = self.game.map.map_location_data[self.position[0]][self.position[1]]
+        direction = direction.lower()
+        move_msg = f'You move {direction}'
+        
+
+        initial_position = self.position
+        arriving_direction = ''
+        if direction == 'north':
+            self.position = (self.position[0] - 1, self.position[1])
+            arriving_direction = 'south'
+        elif direction == 'south':
+            self.position = (self.position[0] + 1, self.position[1])
+            arriving_direction = 'north'
+        elif direction == 'west':
+            self.position = (self.position[0], self.position[1] - 1)
+            arriving_direction = 'east'
+        elif direction == 'east':
+            self.position = (self.position[0], self.position[1] + 1)
+            arriving_direction = 'west'
+
+        # bounds check on map size
+        x_min, y_min = 0, 0
+        x_max, y_max = self.game.map_size
+
+        if (
+            self.position[0] < x_min or
+            self.position[0] >= x_max or
+            self.position[1] < y_min or
+            self.position[1] >= y_max
+        ):
+            move_msg = f'You cannot move {direction}'
+            self.position = initial_position
+
+
+        new_location = self.game.map.map_location_data[self.position[0]][self.position[1]]
+        if old_location != new_location:
+            old_location.remove_content(self)
+            old_location.send_message_to_contents(f'{self.name} moves {direction}\n')
+            new_location.send_message_to_contents(f'{self.name} arrives from the {arriving_direction}\n')
+            new_location.add_content(self)
+            self.position = (new_location.coordinates[0], new_location.coordinates[1])
+
+        return move_msg

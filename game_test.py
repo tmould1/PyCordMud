@@ -149,3 +149,20 @@ def test_game_create_map_10_by_10_map():
     # Assert
     assert len(test_game.map.map_location_data) == 10
     assert len(test_game.map.map_location_data[0]) == 10
+
+def test_enemy_can_move():
+    """
+    Test if the enemy can move.
+    """
+    # Arrange
+    test_game = game.MudGame("Test Game")
+    test_game.create_map((10, 10))
+    coordinates = (5, 5)
+    location = test_game.map.map_location_data[coordinates[0]][coordinates[1]]
+    test_game.enemy_mgr.create_basic_goblin(location)
+
+    # Act
+    test_game.enemy_mgr.enemies[0].move('north')
+
+    # Assert
+    assert test_game.enemy_mgr.enemies[0].location != location

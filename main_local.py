@@ -71,7 +71,7 @@ def main_local():
         # client loop
         while local_game.update():
             user_input = input(">")
-            print("Adding message")
+            #print("Adding message")
             game_bound.add_message(local_player.name + " " + user_input)
     except KeyboardInterrupt:
         print ("Keyboard interrupt detected")
