@@ -7,7 +7,7 @@ def main():
     """
     Main function for running the game.
     """
-    game_instance = game.DiscordGame("Test Game")
+    game_instance = game.MudGame("Test Game")
     player = game.PlayerCharacter("Tester", game_instance)
     game_instance.add_player(player)
     print(game_instance.get_map())

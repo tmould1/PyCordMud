@@ -1,18 +1,24 @@
 """
-This module contains the DiscordBot class and DiscordGame class.
+This module contains the MudGame class
 """
+
+import time
 
 from player import PlayerCharacter
 from enemy import EnemyManager
 from world import Map
+from game_commands import CommandManager
 
-class DiscordGame():
+class MudGame():
     """
-    DiscordGame class for handling the game logic.
+    MudGame class for handling the game logic.
     """
-    def __init__(self, name, size = (10, 10)):
+    def __init__(self, name, size = (10, 10), game_bound_message_semaphore = None, player_bound_message_semaphore = None):
         print(f'Initializing game {name}')
         self.name = name
+        self.game_bound = game_bound_message_semaphore
+        self.player_bound = player_bound_message_semaphore
+        self.command_mgr = CommandManager()
         self.players = []
         self.map_size = size
         self.map = Map()
@@ -25,6 +31,60 @@ class DiscordGame():
         self.dragon_kills = 0
         self.update_shown_map()
         print(f'Game {name} initialized successfully! 🎮')
+        
+    def game_loop(self):
+        """
+        Game loop.
+        """
+        print('Starting game loop')
+        while self.update():
+            time.sleep(6)
+        self.teardown()
+        
+    def input_listener(self):
+        """
+        Input listener.
+        """
+        while True:
+            game_bound_messages = self.game_bound.get_all_messages()
+            for msg in game_bound_messages:
+                print(f'Game received message: {msg}')
+                message_array = msg.split(' ')
+                player_name = message_array[0]
+                message_content = ' '.join(message_array[1:])
+                response = ""
+                if message_content.startswith('!'):
+                    response = self.test_cheats(player_name, message_content)
+                    #print(f'Response: {response}')
+                else:
+                    player = self.get_player_by_name(player_name)
+                    response = self.handle_input(player, message_content)
+                    #print(f'Response: {response}')
+                self.player_bound.add_message(response)
+            time.sleep(0.1)
+        
+    def update(self):
+        """
+        Update the game state.
+        Returns True if the game is still running, False if it has ended.
+        """
+        #print('Tick!')
+        self.enemy_mgr.update_enemies()
+        
+        return True
+    
+    def teardown(self):
+        """
+        Teardown the game.
+        """
+        print('Tearing down game')
+        
+    def handle_input(self, player : PlayerCharacter, command_string : str):
+        """
+        Handle command input
+        """
+     
+        return self.command_mgr.execute_command(command_string, player)
 
     def create_map(self, size=(1,1)):
         """
@@ -61,33 +121,40 @@ class DiscordGame():
         self.players.append(new_player)
         return new_player
 
-    def move_player(self, player_name, direction):
-        """
-        Move the player with the given name in the specified direction.
-        """
-        player = self.get_player_by_name(player_name)
-        if player is None:
-            return self.build_player_not_found_msg(player_name)
-        return player.move(direction)
-
     def build_player_not_found_msg(self, player_name):
         """
         Build a message for a player not found.
         """
         return f'Player {player_name} not found in these players 🤷‍♂️ Have you joined?'
 
-    def show_player_surroundings(self, player_name):
+    ############################
+    ### Game command methods ###
+    ############################
+
+    def move_player(self, player_name, direction):
         """
-        Show the surroundings of the player with the given name.
+        Move the player with the given name in the specified direction.
+        Covered by PlayerCommand_Move
         """
         player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
-        return player.show_surroundings()  
+        return player.move(direction)
+
+    def show_player_surroundings(self, player_name):
+        """
+        Show the surroundings of the player with the given name.
+        Covered by PlayerCommand_ShowPlayerSurroundings
+        """
+        player = self.get_player_by_name(player_name)
+        if player is None:
+            return self.build_player_not_found_msg(player_name)
+        return player.show_surroundings()
 
     def attack_enemy(self, player_name, target_name):
         """
         Attack the enemy with the given name using the player with the given name.
+        Covered by PlayerCommand_Attack
         """
         attack_msg = ''
         player = self.get_player_by_name(player_name)
@@ -99,6 +166,7 @@ class DiscordGame():
     def show_player_stats(self, player_name):
         """
         Show the stats of the player with the given name.
+        Covered by PlayerCommand_Stats
         """
         player = self.get_player_by_name(player_name)
         if player is None:
@@ -110,6 +178,7 @@ class DiscordGame():
     def show_player_inventory(self, player_name):
         """
         Show the inventory of the player with the given name.
+        Covered by PlayerCommand_Inventory
         """
         player = None
         for p in self.players:
@@ -127,30 +196,21 @@ class DiscordGame():
     def take_item(self, player_name, item_name):
         """
         Take an item with the given name using the player with the given name.
+        Covered by PlayerCommand_Take
         """
         take_msg = ''
         player = self.get_player_by_name(player_name)
         if player is None:
             return self.build_player_not_found_msg(player_name)
 
-        location = self.map.map_location_data[player.position[0]][player.position[1]]
-        item = None
-        for content in location.contents:
-            if item_name.lower() in content.name.lower():
-                item = content
-                break
-        if item is None:
-            return f'No item named {item_name} found here'
-
-        take_msg = player.acquire_gear(item)
-        location.remove_content(item)
-        self.update_shown_map()
+        player.take_item(item_name)
 
         return take_msg
 
     def use_consumable(self, player_name, consumable_name):
         """
         Use a consumable with the given name using the player with the given name.
+        Covered by PlayerCommand_Use
         """
         use_msg = ''
         player = self.get_player_by_name(player_name)

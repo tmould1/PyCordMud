@@ -64,17 +64,18 @@ async def on_member_join(member):
 @game_bot.command(name='playgame', help='Starts a game in the game channel')
 async def playgame(context):
     """ Command to start a game in the game channel. """
-    print(f'Received playgame command from {context.author.name} in channel {context.channel.name}')
-    is_game_channel = context.channel == discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL)
+    print(f'Received playgame command from {context.author.name}')
     is_dm_channel = isinstance(context.channel, discord.DMChannel)
-    if not is_game_channel and not is_dm_channel:
-        # Send the user a DM directing them to the game channel
-        await context.author.create_dm()
-        await context.author.dm_channel.send(
-            f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel '
-            f'to "!playgame".'
-        )
-        return
+    if not is_dm_channel:
+        is_game_channel = context.channel == discord.utils.get(game_bot.get_all_channels(), name=GAME_CHANNEL)
+        if not is_game_channel:
+            # Send the user a DM directing them to the game channel
+            await context.author.create_dm()
+            await context.author.dm_channel.send(
+                f'Hi {context.author.name}, please use the {GAME_CHANNEL} channel '
+                f'to "!playgame".'
+            )
+            return
 
     await context.send("Adding you to the game... 🎮")
 
@@ -92,7 +93,7 @@ async def playgame(context):
     first_messages = [
         "Welcome to the game! 🎮", "Let's play!",
         "Here's the map:", 
-        game_bot.show_player_surroundings(context)
+        await show_map(context)
     ]
     await member.send('\n'.join(first_messages))
 
@@ -157,7 +158,38 @@ async def show_map(context):
         )
         return
     member = game_bot.get_player_discord_member(context.author.name)
-    await member.send(game_bot.show_player_surroundings(context))
+    message = await member.send(game_bot.show_player_surroundings(context))
+    emoji_adder = EmojiAdder()
+    await emoji_adder.add_emojis(message)  
+
+class EmojiAdder():
+    """ Class to add emojis to messages. """
+    def __init__(self):
+        self.action_emoji_map = {
+            "attack": "⚔️",
+            "take": "🧳",
+            "use": "🔮",
+            "stats": "📊"
+        }
+
+    async def add_emojis(self, message):
+        """ Add emojis to the message."""
+        for action, emoji in self.action_emoji_map.items():
+            if "Goblin" in message.content and action == "attack":
+                await message.add_reaction(emoji)
+
+@game_bot.event
+async def on_reaction_add(reaction, user):
+    """ Event handler for when a reaction is added. """
+    if user == game_bot.user:
+        return
+    if reaction.message.author == game_bot.user:
+        emoji = reaction.emoji
+
+        if emoji == "⚔️":
+            attack_msg = game_bot.interface_attack_enemy_reaction(reaction, "goblin")
+            member = game_bot.get_player_discord_member(user.name)
+            await member.send(attack_msg)
 
 @game_bot.command(name='attack', help='Attack an enemy')
 async def attack(context, target_name):
@@ -170,7 +202,7 @@ async def attack(context, target_name):
             f'Hi {context.author.name}, {wrong_channel_msg}'
         )
         return
-    attack_msg = game_bot.attack_enemy(context, target_name)
+    attack_msg = game_bot.interface_attack_enemy(context, target_name)
     member = game_bot.get_player_discord_member(context.author.name)
     await member.send(attack_msg)
 

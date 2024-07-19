@@ -69,6 +69,13 @@ class EnemyManager():
         random_y = random.randint(0, self.game.map_size[1] - 1)
         random_location = self.game.map.map_location_data[random_x][random_y]
         self.create_boss_dragon(random_location)
+        
+    def update_enemies(self):
+        """
+        Updates the enemies in the game.
+        """
+        for enemy in self.enemies:
+            enemy.update()
 
     def create_basic_goblin(self, location: Location):
         """
@@ -224,3 +231,25 @@ class Enemy(LocationContent):
         drop_msg = f'{self.name} drops {random_drop.name}.\n'
         self.location.add_content(random_drop)
         return drop_msg
+
+    def update(self):
+        """
+        Updates the enemy.
+        """
+        random_roll = random.randint(1, 100)
+        # 10% chance to move
+        if random_roll <= 10:
+            random_x = random.randint(-1, 1)
+            random_y = random.randint(-1, 1)
+            new_x = self.location.coordinates[0] + random_x
+            new_y = self.location.coordinates[1]+ random_y
+            if new_x < 0 or new_x >= self.manager.game.map_size[0]:
+                new_x = self.location.coordinates[0]
+            if new_y < 0 or new_y >= self.manager.game.map_size[1]:
+                new_y = self.location.coordinates[1]
+            new_location = self.manager.game.map.map_location_data[new_x][new_y]
+            self.location.remove_content(self)
+            new_location.add_content(self)
+            self.location = new_location
+            self.manager.game.update_shown_map()
+            print(f'{self.name} moved to {self.location.name}\n')

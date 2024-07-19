@@ -11,7 +11,7 @@ def test_game_init_has_world():
     Test case for initializing the game with a world.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
 
     # Act
     test_game.create_map((1,1))
@@ -24,7 +24,7 @@ def test_game_init_has_enemies():
     Test case for initializing the game with enemies.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
 
     # Act
     test_game.create_map()
@@ -37,7 +37,7 @@ def test_game_add_player_increases_player_count():
     Test case for adding a player to the game.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
 
     # Act
@@ -51,7 +51,7 @@ def test_game_move_player_has_moved():
     Test case for moving the player.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
     test_game.add_player(tester_name)
 
@@ -66,7 +66,7 @@ def test_show_player_surroundings_has_contents():
     Test case for showing the player surroundings with contents.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
     test_player = test_game.add_player(tester_name)
 
@@ -85,7 +85,7 @@ def test_player_gets_health_potion_on_duplicate_gear_acquisition():
     Test if the player gets a health potion on duplicate gear acquisition.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
     test_player = test_game.add_player(tester_name)
     test_gear = gear.Gear('Test Gear', 'A test piece of gear')
@@ -106,7 +106,7 @@ def test_game_get_player_by_name_returns_player():
     Test if the game gets the player by name.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
     test_player = test_game.add_player(tester_name)
 
@@ -121,7 +121,7 @@ def test_game_player_use_potion_restores_health():
     Test if the player's health is restored when using a health potion.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
     tester_name = "Tester"
     test_player = test_game.add_player(tester_name)
     test_health_potion = consumables.HealthPotion("Health Potion", "A restorative potion.", 2)
@@ -141,7 +141,7 @@ def test_game_create_map_10_by_10_map():
     Test if the game creates a 10x10 map.
     """
     # Arrange
-    test_game = game.DiscordGame("Test Game")
+    test_game = game.MudGame("Test Game")
 
     # Act
     test_game.create_map((10, 10))

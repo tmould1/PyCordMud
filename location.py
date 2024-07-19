@@ -50,10 +50,10 @@ class Location():
         """
         for c in self.contents:
             if c.name == content.name:
-                print(f'Removing {c.name} from {self.name}')
+                #print(f'Removing {c.name} from {self.name}')
                 self.contents.remove(c)
-                remaining_content = self.build_content_string()
-                print(f'Contents remaining: {remaining_content}')
+                #remaining_content = self.build_content_string()
+                #print(f'Contents remaining: {remaining_content}')
                 break
 
     def build_content_string(self):

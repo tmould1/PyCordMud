@@ -156,3 +156,22 @@ class PlayerCharacter(Character):
             consumables_str += f'{consumable.icon} {consumable.name} - {consumable.description}\n'
         stat_msg += consumables_str
         return stat_msg
+
+    def take_item(self, item_name):
+        """
+        Take an item with the given name using the player.
+        """
+        take_msg = ''
+        location = self.game.map.map_location_data[self.position[0]][self.position[1]]
+        item = None
+        for content in location.contents:
+            if item_name.lower() in content.name.lower():
+                item = content
+                break
+        if item is None:
+            return f'No item named {item_name} found here'
+
+        take_msg = self.acquire_gear(item)
+        location.remove_content(item)
+        self.game.update_shown_map()
+        return take_msg

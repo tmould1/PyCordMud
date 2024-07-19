@@ -13,7 +13,7 @@ class DiscordBot(commands.Bot):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.game = game.DiscordGame("JoPy")
+        self.game = game.MudGame("JoPy")
 
     def get_player_discord_member(self, player_name):
         """
@@ -47,11 +47,17 @@ class DiscordBot(commands.Bot):
         """
         return self.game.move_player(context.author.name, direction)
 
-    def attack_enemy(self, context : commands.Context, target_name):
+    def interface_attack_enemy(self, context : commands.Context, target_name):
         """
         Attack the enemy with the given context and target name.
         """
         return self.game.attack_enemy(context.author.name, target_name)
+    
+    def interface_attack_enemy_reaction(self, reaction, target_name):
+        """
+        Attack the enemy with the given reaction and target name.
+        """
+        return self.game.attack_enemy(reaction.message.author.name, target_name)
 
     def show_player_stats(self, context : commands.Context):
         """
